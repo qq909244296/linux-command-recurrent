@@ -29,7 +29,31 @@ int main(int argc, char *agrv)
     }
     argc -=flags->opt_ind;
     argv +=flags->opt_ind;
-    
+    if(argc == 0)
+    {
+        printf_usage();
+    }
+    for(i=0;i<argc;i++)
+    {
+        if(flags->iflag)
+        {
+            printf("rm: remove r '%s'\n",agrv[i]);//到底输出什么还要再测试
+            std_c = fgetc(stdin);
+            if((char)std_c == 'y' || (char)std_c == "Y")
+            {
+                //do something
+            }
+            else if((char)std_c == 'N'|| (char)std_c == 'n')
+                {
+                    //not do something
+                }
+                else
+                {
+                    //not do something
+                }
+        
+        }
+        if()
 
 
 
