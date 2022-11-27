@@ -53,7 +53,7 @@ int main(int argc, char *agrv)
                 }
         
         }
-        if()
+        if(flags->)
 
 
 
