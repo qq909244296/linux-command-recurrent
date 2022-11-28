@@ -3,6 +3,9 @@
 #include <getopt.h>
 #include "rmi.h"
 #include "opt.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 
 
@@ -15,6 +18,7 @@ int main(int argc, char *agrv)
     }
     
     struct flag_all *flags;
+    struct stat statbuf;
     
     struct option longopt = {{"force",0,0,'f'}, {"interactive",0,0,'1'},
                             {"one-file-system",0,0,'o'},{"no-preserve-root",0,0,'n'},
@@ -35,25 +39,28 @@ int main(int argc, char *agrv)
     }
     for(i=0;i<argc;i++)
     {
-        if(flags->iflag)
-        {
-            printf("rm: remove r '%s'\n",agrv[i]);//到底输出什么还要再测试
-            std_c = fgetc(stdin);
-            if((char)std_c == 'y' || (char)std_c == "Y")
-            {
-                //do something
-            }
-            else if((char)std_c == 'N'|| (char)std_c == 'n')
-                {
-                    //not do something
-                }
-                else
-                {
-                    //not do something
-                }
+        // if(flags->iflag)
+        // {
+        //     printf("rm: remove r '%s'\n",agrv[i]);//到底输出什么还要再测试
+        //     std_c = fgetc(stdin);
+        //     if((char)std_c == 'y' || (char)std_c == "Y")
+        //     {
+        //         //do something
+        //     }
+        //     else if((char)std_c == 'N'|| (char)std_c == 'n')
+        //         {
+        //             //not do something
+        //         }
+        //         else
+        //         {
+        //             //not do something
+        //         }
         
+        // }
+        if(flags->rflag)
+        {
+
         }
-        if(flags->)
 
 
 
@@ -63,6 +70,6 @@ int main(int argc, char *agrv)
 
 
 
-
+    }
     exit(0);
 }
