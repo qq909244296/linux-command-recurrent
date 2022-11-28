@@ -66,7 +66,7 @@
     argv +=optind;
     if(argc == 0)
     {
-        printf_usage();
+        printf_help();
     }
     if(modeStat == NULL)
     {
