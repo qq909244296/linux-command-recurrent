@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     argv += optind;
     if(argc == 0)
     {
-        printf_usage();
+        printf_help();
     }
     for(i=0;i<argc;i++)
     {
