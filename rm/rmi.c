@@ -45,12 +45,13 @@ void printf_err(int err)
 
 
 
-int statDir(char *agv,struct stat *stat_buf)
+int statDir(char *agv,struct stat *stat_buf,int fflag)
 {
     int reval;
     if(stat(agv, stat_buf) < 0)
     {
-        printf_err(errno);
+        if(fflag == 0)
+            printf_err(errno);
         return -1;
     }
     return 0;
@@ -63,6 +64,8 @@ int reMove(char *path)
     err = remove(path);
     if(err)
     {
+        if(errno == ENOTEMPTY)
+        
 
         return errno;
     }

@@ -37,19 +37,20 @@ int main(int argc, char **argv)
     for(i=0;i<argc;i++)
     {
 
-        if(statDir(argv[i],&statbuf))
+        if(statDir(argv[i],&statbuf,flags->fflag))
         {
             exit(1);
         }
         if(S_ISDIR(statbuf.st_mode))
         {
+            //printf("hhh\n");
             if(flags->rflag)
             {
                 mind_ret = mind_r(flags->iflag,argv[i]);
                 if(mind_ret)
                 {
                 
-                    err = reMove(argv[i]);
+                    err = reMo3ve(argv[i]);
                     if(err)
                     {
                         if(flags->fflag == 0)
@@ -68,6 +69,7 @@ int main(int argc, char **argv)
         }
         else if(S_ISREG(statbuf.st_mode))
             {
+                printf("hhh\n");
                 err = reMove(argv[i]);
                 if(err)
                 {
@@ -78,8 +80,10 @@ int main(int argc, char **argv)
             }
             else
             {
+                printf("hhhh\n");
                 if(flags->fflag == 0)
                 {
+                    
                     fprintf(stderr,"rm: cannot remove '%s':             \
                                 No such file or directory",argv[i]);
                 }

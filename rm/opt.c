@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-extern  char *in_er={"i\0"};
+char *in_er={"i\0"};
 struct flag_all *get_opt(int agc, char **agv)
 {
     int ch;
