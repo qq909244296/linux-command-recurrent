@@ -9,7 +9,7 @@
 
 
 
-int main(int argc, char *agrv)
+int main(int argc, char **argv)
 {
 
     if(argc < 2)
@@ -19,14 +19,11 @@ int main(int argc, char *agrv)
     
     struct flag_all *flags;
     struct stat statbuf;
-    
-    struct option longopt = {{"force",0,0,'f'}, {"interactive",0,0,'1'},
-                            {"one-file-system",0,0,'o'},{"no-preserve-root",0,0,'n'},
-                            {"recursive",0,0,'r'},{"dir",0,0,'d'},{"verbose",0,0,'v'},
-                            {"help",0,0,'h'},{0,0,0,0}};
-    int longindex = 8;
+    int err,i;
+    int mind_ret;
 
-    flags = get_opt(argc,argv,longopt,&longindex);
+
+    flags = get_opt(argc,argv);
     if(flags == NULL)
     {
         exit(1);
@@ -39,36 +36,55 @@ int main(int argc, char *agrv)
     }
     for(i=0;i<argc;i++)
     {
-        // if(flags->iflag)
-        // {
-        //     printf("rm: remove r '%s'\n",agrv[i]);//到底输出什么还要再测试
-        //     std_c = fgetc(stdin);
-        //     if((char)std_c == 'y' || (char)std_c == "Y")
-        //     {
-        //         //do something
-        //     }
-        //     else if((char)std_c == 'N'|| (char)std_c == 'n')
-        //         {
-        //             //not do something
-        //         }
-        //         else
-        //         {
-        //             //not do something
-        //         }
-        
-        // }
-        if(flags->rflag)
+
+        if(statDir(argv[i],&statbuf))
         {
-
+            exit(1);
         }
+        if(S_ISDIR(statbuf.st_mode))
+        {
+            if(flags->rflag)
+            {
+                mind_ret = mind_r(flags->iflag,argv[i]);
+                if(mind_ret)
+                {
+                
+                    err = reMove(argv[i]);
+                    if(err)
+                    {
+                        if(flags->fflag == 0)
+                            printf_err(err);
+                    }
+                }
+                else
+                {
+                    exit(0);
+                }
+            }
+            else
+            {
+                fprintf(stderr,"cannot remove '%s': Is a directory\n",argv[i]);
+            }
+        }
+        else if(S_ISREG(statbuf.st_mode))
+            {
+                err = reMove(argv[i]);
+                if(err)
+                {
+                    if(flags->fflag == 0)
+                        printf_err(err);
+                }
 
-
-
-
-
-
-
-
+            }
+            else
+            {
+                if(flags->fflag == 0)
+                {
+                    fprintf(stderr,"rm: cannot remove '%s':             \
+                                No such file or directory",argv[i]);
+                }
+            }
+        
 
     }
     exit(0);

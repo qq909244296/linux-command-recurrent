@@ -1,7 +1,7 @@
 #ifndef OPT_H__
 #define OPT_H__
 
-char* inter = "i\0" ;
+extern char* in_er ;
 struct flag_all{
     int oflag;
     int fflag;
@@ -13,8 +13,7 @@ struct flag_all{
     int inter_flag;
     int opt_ind;
 };
-struct flag_all *get_opt(int, const char **,
-            const struct option *, int *);
+struct flag_all *get_opt(int, char **);
 
 
 

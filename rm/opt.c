@@ -3,14 +3,15 @@
 #include <getopt.h>
 #include "rmi.h"
 #include "opt.h"
-
-extern  char *inter;
-struct flag_all *get_opt(int agc, const char **arv,
-            const struct option *long_opts, int *optindex)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+extern  char *in_er={"i\0"};
+struct flag_all *get_opt(int agc, char **agv)
 {
     int ch;
     struct flag_all *flags;
-    flags = malloc(sizeof(*flag));
+    flags = malloc(sizeof(*flags));
     if(flags == NULL)
     {
         fprintf(stderr,"malloc() failure.\n");
@@ -23,46 +24,63 @@ struct flag_all *get_opt(int agc, const char **arv,
     flags->vflag = 0;
     flags->i_flag = 0;
     flags->iflag = 0;
-    flags->intter_flag = 0;
+    flags->inter_flag = 0;
     flags->opt_ind = 0;
-    while((ch = getopt_long(argc,argv,"fiIrRdvh",longopt,&longindex)) != -1)
+    struct option longopt[] = {{"force",0,0,'f'}, {"interactive",0,0,'1'},
+                            {"one-file-system",0,0,'o'},{"no-preserve-root",0,0,'n'},
+                            {"recursive",0,0,'r'},{"dir",0,0,'d'},{"verbose",0,0,'v'},
+                            {"help",0,0,'h'},{0,0,0,0}};
+    int longindex = 8;
+    while((ch = getopt_long(agc,agv,"fiIrRdvh",longopt,&longindex)) != -1)
     {
         switch(ch)
         {
             case '1':
-                intter_flag = 1;
+                flags->inter_flag = 1;
                 if(optarg != NULL)
-                    inter = optarg;
+                    in_er = optarg;
                 break;
             case 'h':
                 printf_help();
                 exit(0);
             case 'f':
-                fflag = 1;
+                flags->fflag = 1;
                 break;
             case 'o':
-                oflag = 1;
+                flags->oflag = 1;
                 break;
             case 'r':
             case 'R':
-                rflag = 1;
+                flags->rflag = 1;
                 break;
             case 'i':
-                iflag = 1;
+                flags->iflag = 1;
                 break;
             case 'I':
-                i_flag = 1;
+                flags->i_flag = 1;
                 break;
             case 'd':
-                dflag = 1;
+                flags->dflag = 1;
                 break;
             case 'v':
-                vflag = 1;
+                flags->vflag = 1;
                 break;
             default :
                 printf_help();
                 exit(1);
         }
+    }
+    if((flags->iflag ==1 && flags->i_flag ==1))
+    {
+        flags->i_flag = 0;
+    }
+    if(flags->iflag ==1 && flags->fflag == 1)
+    {
+        flags->fflag = 0;
+    }
+    if(flags->iflag == 0&&flags->fflag ==1 && flags->i_flag ==1)
+    {
+        flags->fflag = 1;
     }
     flags->opt_ind = optind;
     return flags;
