@@ -20,6 +20,7 @@ int main(int argc, char **argv)
     struct stat statbuf;
     int err,i;
     int mind_ret;
+   
 
 
     flags = get_opt(argc,argv);
@@ -44,6 +45,11 @@ int main(int argc, char **argv)
         {
             if(flags->rflag)
             {
+                mind_ret = mind_i(flags->i_flag);
+                if(mind_ret)
+                {
+                    exit(0);
+                }
                 err = reMove(argv[i]);
                 if(err)
                 {
@@ -59,7 +65,7 @@ int main(int argc, char **argv)
         }
         else if(S_ISREG(statbuf.st_mode))
             {
-                
+            
                 err = reMove(argv[i]);
                 if(err)
                 {
@@ -75,7 +81,7 @@ int main(int argc, char **argv)
                 {
                     
                     fprintf(stderr,"rm: cannot remove '%s':             \
-                                No such file or directory",argv[i]);
+                                No such file or directory\n",argv[i]);
                 }
             }
         

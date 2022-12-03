@@ -12,4 +12,5 @@ int statDir(char *,struct stat *,int);
 int reMovempty(char *);
 int reMove(char *);
 int mind_r(int, char *);
+int mind_i(int );
 #endif

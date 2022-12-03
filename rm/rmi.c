@@ -98,16 +98,19 @@ int noloop(const char *path)
 }
 int re_move(const int arc,const char **arv)
 {
-    int i,err1,ret;
+    int i,err1,ret,mind_ret;
     for(i=0;i<arc;i++)
     {
         if(!noloop(arv[i]))
         {        
-            mind_r(flags->iflag,arv[i]);   
+           
+            mind_ret = mind_r(flags->iflag,arv[i]);   
+            if(mind_ret)
+                exit(0);
             err1 = remove(arv[i]);
+
             if(err1)
-            {   
-                  
+            {        
                 if(errno == ENOTEMPTY)
                 {
                     
@@ -147,21 +150,26 @@ void glob_(char *path)
     strcpy(newpath,path);
     strcat(newpath,"/.*");
     glob(newpath,GLOB_APPEND,NULL,&globres);
+    
     re_move(globres.gl_pathc,globres.gl_pathv);
     
 }
 int reMovempty(char *path)
 {
     struct stat statres;
-    int retr;
+    int retr,mind_ret;
+   
     if(lstat(path,&statres) < 0)
     {
+        
         exit(1);
     }
     if(!S_ISDIR(statres.st_mode))
     {
-        
-        mind_r(flags->iflag,path);
+      
+        mind_ret = mind_r(flags->iflag,path);
+        if(mind_ret)
+            exit(1);
         remove(path);
         return 0;
     }
@@ -175,9 +183,12 @@ int reMovempty(char *path)
     // }
     // if(errno ==ENOTEMPTY)
     // {   
-        glob_(path);
-        mind_r(flags->iflag,path);
-        remove(path);       
+    glob_(path);
+ 
+    mind_ret = mind_r(flags->iflag,path);
+    if(mind_ret)
+        exit(0);
+    remove(path);       
     //}
     return 0;
 }
@@ -185,14 +196,17 @@ int reMovempty(char *path)
 int reMove(char *path)
 {
     char *dirname = path;
-    int err,ret;
-    mind_r(flags->iflag,path);
+    int err,ret,mind_ret;
+    mind_ret = mind_r(flags->iflag,path);
+    if(mind_ret)
+        exit(1);
+    
     err = remove(path);
     if(err)
     {
         if(errno == ENOTEMPTY)
         {
-            
+       
             ret = reMovempty(path);
             if(ret)
             {
@@ -214,39 +228,91 @@ int reMove(char *path)
 
 int mind_r(int flag_r,char *arg)
 {   
-    int std_c;
+    char std_c=0;
     int ret;
     if(flag_r)
     {
         ret = findempty(arg);
         if(ret == 0)
         {
-            printf("rm: remove r '%s'\n",arg);//到底输出什么还要再测试
+            printf("rm: remove r '%s'?",arg);//到底输出什么还要再测试/*  */
         }
         else
         {
             printf("rm: descend into directory '%s'?",arg);
+            
         }
-        std_c = fgetc(stdin);
-        if((char)std_c == 'y' || (char)std_c == 'Y')
+        //std_c = fgetc(stdin);
+        printf("y/n:\n");
+        scanf("%c\n",&std_c);
+       
+        while(std_c == 0)
         {
-             return 1;
+
+        }
+        
+        if(std_c == 'y' || std_c == 'Y')
+        {
+            
+             return 0;
                 //do something
         }
         else if((char)std_c == 'N'|| (char)std_c == 'n')
             {
-                exit(0);
+                return 1;
                     //not do something
             }
             else
             {
-                return 0;
+                //yprintf("   %c\n",std_c);
+            
+                return 2;
                     //not do something
             }
         
     }
     else
     {
-        return 2;
+        return 0;
     }
+}
+int mind_i(int i_flag)
+{
+    char std_c;
+    if(i_flag == 1)
+    {
+        printf("rm: remove 1 argument recursively?");
+        scanf("%c\n",&std_c);
+        while(std_c == 0)
+        {
+
+        }
+        
+        if(std_c == 'y' || std_c == 'Y')
+        {
+            
+             return 0;
+                //do something
+        }
+        else if((char)std_c == 'N'|| (char)std_c == 'n')
+            {
+                return 1;
+                    //not do something
+            }
+            else
+            {
+                //yprintf("   %c\n",std_c);
+            
+                return 2;
+                    //not do something
+            }
+        
+    }
+    else
+    {
+        return 0;
+    }
+        
+    
+
 }

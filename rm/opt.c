@@ -81,7 +81,7 @@ struct flag_all *get_opt(int agc, char **agv)
     }
     if(flags->iflag == 0&&flags->fflag ==1 && flags->i_flag ==1)
     {
-        flags->fflag = 1;
+        flags->fflag = 0;
     }
     flags->opt_ind = optind;
     return flags;
