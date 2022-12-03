@@ -66,7 +66,7 @@ int noloop(const char *path)
     {
         exit(1);
     }
-    puts(path);
+ 
     pos = strrchr(path,'/');
     if(strcmp(pos+1,".") ==0 || strcmp(pos+1,"..") == 0)
     {
@@ -93,56 +93,53 @@ int reMovempty(char *path)
     }
     if(errno ==ENOTEMPTY)
     {    
-    char newpath[256];
-    int i;
-    int err1;
-    glob_t globres;
-    
-    strcpy(newpath,path);
-    strcat(newpath,"/*");
-    int ret;
-
-    glob(newpath,0,NULL,&globres);
-    strcpy(newpath,path);
-    strcat(newpath,"/.*");
-    glob(newpath,GLOB_APPEND,NULL,&globres);
-    for(i=0;i<globres.gl_pathc;i++)
-    {
-        if(!noloop(globres.gl_pathv[i]))
-        {           
-            err1 = remove(globres.gl_pathv[i]);
-            if(err1)
-            {   
+        char newpath[256];
+        int i;
+        int err1;
+        int ret;
+        glob_t globres;
+        strcpy(newpath,path);
+        strcat(newpath,"/*");
+        glob(newpath,0,NULL,&globres);
+        strcpy(newpath,path);
+        strcat(newpath,"/.*");
+        glob(newpath,GLOB_APPEND,NULL,&globres);
+        for(i=0;i<globres.gl_pathc;i++)
+        {
+            if(!noloop(globres.gl_pathv[i]))
+            {           
+                err1 = remove(globres.gl_pathv[i]);
+                if(err1)
+                {   
                   
-                if(errno == ENOTEMPTY)
-                {
-                    
-                    ret = reMovempty(globres.gl_pathv[i]);
-                    if(ret)
+                    if(errno == ENOTEMPTY)
                     {
-                        return errno;
+                    
+                        ret = reMovempty(globres.gl_pathv[i]);
+                        if(ret)
+                        {
+                            return errno;
+                        }
+                        else
+                        {
+                            printf("%s is remove\n",globres.gl_pathv[i]);
+                        }
                     }
                     else
                     {
-                        printf("%s is remove\n",globres.gl_pathv[i]);
+                        fprintf(stderr,"[%s] %s\n",globres.gl_pathv[i],strerror(errno));
+                        return errno;
                     }
                 }
                 else
                 {
-                    fprintf(stderr,"[%s] %s\n",globres.gl_pathv[i],strerror(errno));
-                    return errno;
+                    printf("%s is  remove\n",globres.gl_pathv[i]);
                 }
             }
-            else
-            {
-                printf("%s is  remove\n",globres.gl_pathv[i]);
-            }
+        
+        //remove(path);
         }
         remove(path);
-        
-        
-    }
-
     }
     return 0;
 }
