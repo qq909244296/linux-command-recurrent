@@ -7,7 +7,7 @@
 void printf_usage(void);
 void printf_help(void);
 void printf_err(int);
-
+int findempty(char *);
 int statDir(char *,struct stat *,int);
 int reMovempty(char *);
 int reMove(char *);

@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 char *in_er={"i\0"};
 struct flag_all *flags;
 struct flag_all *get_opt(int agc, char **agv)
@@ -27,7 +28,7 @@ struct flag_all *get_opt(int agc, char **agv)
     flags->iflag = 0;
     flags->inter_flag = 0;
     flags->opt_ind = 0;
-    struct option longopt[] = {{"force",0,0,'f'}, {"interactive",0,0,'1'},
+    struct option longopt[] = {{"force",0,0,'f'}, {"interactive",1,0,'1'},
                             {"one-file-system",0,0,'o'},{"no-preserve-root",0,0,'n'},
                             {"recursive",0,0,'r'},{"dir",0,0,'d'},{"verbose",0,0,'v'},
                             {"help",0,0,'h'},{0,0,0,0}};
@@ -71,6 +72,22 @@ struct flag_all *get_opt(int agc, char **agv)
                 exit(1);
         }
     }
+    if(flags->inter_flag)
+    {
+        if(strcmp(in_er,"i")==0)
+        {
+            flags->iflag = 1;
+        }
+        if(strcmp(in_er,"once") ==0 )
+        {
+            flags->i_flag = 1;
+        }
+        if(strcmp(in_er,"never") == 0)
+        {
+            flags->iflag = 0;
+            flags->i_flag = 0;
+        }
+    }
     if((flags->iflag ==1 && flags->i_flag ==1))
     {
         flags->i_flag = 0;
@@ -83,6 +100,13 @@ struct flag_all *get_opt(int agc, char **agv)
     {
         flags->fflag = 0;
     }
+    if(flags->rflag ==1&& flags->dflag ==1)
+    {
+        flags->dflag = 0;
+    }
+
+
+
     flags->opt_ind = optind;
     return flags;
 }

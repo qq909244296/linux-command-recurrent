@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     struct stat statbuf;
     int err,i;
     int mind_ret;
-   
+    int isempty;
 
 
     flags = get_opt(argc,argv);
@@ -43,6 +43,26 @@ int main(int argc, char **argv)
         }
         if(S_ISDIR(statbuf.st_mode))
         {
+            if(flags->dflag ==1)
+            {
+                isempty = findempty(argv[i]);
+                if(!isempty)
+                {
+                    err = remove(argv[i]);
+                    if(err)
+                    {
+                        fprintf(stderr,"%s is not empty.",argv[i]);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+            }
             if(flags->rflag)
             {
                 mind_ret = mind_i(flags->i_flag);

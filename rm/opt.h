@@ -12,7 +12,7 @@ extern struct flag_all{
     int iflag;
     int inter_flag;
     int opt_ind;
-};
+}c;//使用c 是为了消除警告。
 struct flag_all *get_opt(int, char **);
 
 
