@@ -3,12 +3,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "opt.h"
 void printf_usage(void);
 void printf_help(void);
 void printf_err(int);
 
 int statDir(char *,struct stat *,int);
-
+int reMovempty(char *);
 int reMove(char *);
 int mind_r(int, char *);
 #endif

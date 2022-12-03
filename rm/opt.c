@@ -7,10 +7,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 char *in_er={"i\0"};
+struct flag_all *flags;
 struct flag_all *get_opt(int agc, char **agv)
 {
     int ch;
-    struct flag_all *flags;
+    
     flags = malloc(sizeof(*flags));
     if(flags == NULL)
     {

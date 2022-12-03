@@ -8,7 +8,7 @@
 #include "rmi.h"
 #include <glob.h>
 
-
+struct flag_all *flags;
 
 
 void printf_usage(void)
@@ -44,7 +44,28 @@ void printf_err(int err)
     fprintf(stderr,"%s\n",strerror(err));
 }
 
-
+int findempty(char *path)
+{
+    int i;
+    char newpath[256];
+    glob_t globres;
+    strcpy(newpath,path);
+    strcat(newpath,"/*");
+    glob(newpath,0,NULL,&globres);
+    strcpy(newpath,path);
+    strcat(newpath,"/.*");
+    glob(newpath,GLOB_APPEND,NULL,&globres);
+    if(globres.gl_pathc > 2)
+    {
+        //dir not empty
+        return 1;
+    }
+    else
+    {
+        //dir is empty
+        return 0;
+    }
+}
 
 int statDir(char *agv,struct stat *stat_buf,int fflag)
 {
@@ -57,6 +78,7 @@ int statDir(char *agv,struct stat *stat_buf,int fflag)
     }
     return 0;
 }
+
 int noloop(const char *path)
 {
     
@@ -74,73 +96,89 @@ int noloop(const char *path)
     }
     return 0;
 }
+int re_move(const int arc,const char **arv)
+{
+    int i,err1,ret;
+    for(i=0;i<arc;i++)
+    {
+        if(!noloop(arv[i]))
+        {        
+            mind_r(flags->iflag,arv[i]);   
+            err1 = remove(arv[i]);
+            if(err1)
+            {   
+                  
+                if(errno == ENOTEMPTY)
+                {
+                    
+                    ret = reMovempty(arv[i]);
+                    if(ret)
+                    {
+                        return errno;
+                    }
+                    else
+                    {
+                        printf("%s is remove\n",arv[i]);
+                    }
+                }
+                else
+                {
+                    fprintf(stderr,"[%s] %s\n",arv[i],strerror(errno));
+                    return errno;
+                }
+            }
+            else
+            {
+                printf("%s is  remove\n",arv[i]);
+            }
+        }
+        
+        
+    }
+
+}
+void glob_(char *path)
+{
+    char newpath[256];
+    glob_t globres;
+    strcpy(newpath,path);
+    strcat(newpath,"/*");
+    glob(newpath,0,NULL,&globres);
+    strcpy(newpath,path);
+    strcat(newpath,"/.*");
+    glob(newpath,GLOB_APPEND,NULL,&globres);
+    re_move(globres.gl_pathc,globres.gl_pathv);
+    
+}
 int reMovempty(char *path)
 {
     struct stat statres;
+    int retr;
     if(lstat(path,&statres) < 0)
     {
         exit(1);
     }
     if(!S_ISDIR(statres.st_mode))
     {
+        
+        mind_r(flags->iflag,path);
         remove(path);
         return 0;
     }
-    int retr;
-    if(S_ISDIR(statres.st_mode))
-    {
-        retr = remove(path);
-    }
-    if(errno ==ENOTEMPTY)
-    {    
-        char newpath[256];
-        int i;
-        int err1;
-        int ret;
-        glob_t globres;
-        strcpy(newpath,path);
-        strcat(newpath,"/*");
-        glob(newpath,0,NULL,&globres);
-        strcpy(newpath,path);
-        strcat(newpath,"/.*");
-        glob(newpath,GLOB_APPEND,NULL,&globres);
-        for(i=0;i<globres.gl_pathc;i++)
-        {
-            if(!noloop(globres.gl_pathv[i]))
-            {           
-                err1 = remove(globres.gl_pathv[i]);
-                if(err1)
-                {   
-                  
-                    if(errno == ENOTEMPTY)
-                    {
-                    
-                        ret = reMovempty(globres.gl_pathv[i]);
-                        if(ret)
-                        {
-                            return errno;
-                        }
-                        else
-                        {
-                            printf("%s is remove\n",globres.gl_pathv[i]);
-                        }
-                    }
-                    else
-                    {
-                        fprintf(stderr,"[%s] %s\n",globres.gl_pathv[i],strerror(errno));
-                        return errno;
-                    }
-                }
-                else
-                {
-                    printf("%s is  remove\n",globres.gl_pathv[i]);
-                }
-            }
-        
-        //remove(path);
-        }
-        remove(path);
-    }
+    
+    // if(S_ISDIR(statres.st_mode))
+    // {
+    //     printf("iii\n");
+    //     mind_r(flags->iflag,path);
+    //     retr = remove(path);
+    //     if(retr)
+    // }
+    // if(errno ==ENOTEMPTY)
+    // {   
+        glob_(path);
+        mind_r(flags->iflag,path);
+        remove(path);       
+    //}
     return 0;
 }
 
@@ -148,6 +186,7 @@ int reMove(char *path)
 {
     char *dirname = path;
     int err,ret;
+    mind_r(flags->iflag,path);
     err = remove(path);
     if(err)
     {
@@ -176,9 +215,18 @@ int reMove(char *path)
 int mind_r(int flag_r,char *arg)
 {   
     int std_c;
+    int ret;
     if(flag_r)
     {
-        printf("rm: remove r '%s'\n",arg);//到底输出什么还要再测试
+        ret = findempty(arg);
+        if(ret == 0)
+        {
+            printf("rm: remove r '%s'\n",arg);//到底输出什么还要再测试
+        }
+        else
+        {
+            printf("rm: descend into directory '%s'?",arg);
+        }
         std_c = fgetc(stdin);
         if((char)std_c == 'y' || (char)std_c == 'Y')
         {
@@ -187,7 +235,7 @@ int mind_r(int flag_r,char *arg)
         }
         else if((char)std_c == 'N'|| (char)std_c == 'n')
             {
-                return 0;
+                exit(0);
                     //not do something
             }
             else

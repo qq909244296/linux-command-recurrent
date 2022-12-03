@@ -2,7 +2,7 @@
 #define OPT_H__
 
 extern char* in_er ;
-struct flag_all{
+extern struct flag_all{
     int oflag;
     int fflag;
     int rflag;

@@ -16,7 +16,6 @@ int main(int argc, char **argv)
     {
         printf_usage();
     }
-    
     struct flag_all *flags;
     struct stat statbuf;
     int err,i;
@@ -45,21 +44,13 @@ int main(int argc, char **argv)
         {
             if(flags->rflag)
             {
-                mind_ret = mind_r(flags->iflag,argv[i]);
-                if(mind_ret)
+                err = reMove(argv[i]);
+                if(err)
                 {
-                
-                    err = reMove(argv[i]);
-                    if(err)
-                    {
-                        if(flags->fflag == 0)
-                            printf_err(err);
-                    }
+                    if(flags->fflag == 0)
+                        printf_err(err);
                 }
-                else
-                {
-                    exit(0);
-                }
+
             }
             else
             {
