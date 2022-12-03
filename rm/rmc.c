@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
+#include <glob.h>
 
 
 int main(int argc, char **argv)
@@ -43,14 +43,13 @@ int main(int argc, char **argv)
         }
         if(S_ISDIR(statbuf.st_mode))
         {
-            //printf("hhh\n");
             if(flags->rflag)
             {
                 mind_ret = mind_r(flags->iflag,argv[i]);
                 if(mind_ret)
                 {
                 
-                    err = reMo3ve(argv[i]);
+                    err = reMove(argv[i]);
                     if(err)
                     {
                         if(flags->fflag == 0)
@@ -69,7 +68,7 @@ int main(int argc, char **argv)
         }
         else if(S_ISREG(statbuf.st_mode))
             {
-                printf("hhh\n");
+                
                 err = reMove(argv[i]);
                 if(err)
                 {
@@ -80,7 +79,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                printf("hhhh\n");
+                
                 if(flags->fflag == 0)
                 {
                     

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "rmi.h"
+#include <glob.h>
 
 
 
@@ -56,18 +57,119 @@ int statDir(char *agv,struct stat *stat_buf,int fflag)
     }
     return 0;
 }
+int noloop(const char *path)
+{
+    
+    char *path1 = path;
+    char *pos;
+    if(path1 == NULL)
+    {
+        exit(1);
+    }
+    puts(path);
+    pos = strrchr(path,'/');
+    if(strcmp(pos+1,".") ==0 || strcmp(pos+1,"..") == 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+int reMovempty(char *path)
+{
+    struct stat statres;
+    if(lstat(path,&statres) < 0)
+    {
+        exit(1);
+    }
+    if(!S_ISDIR(statres.st_mode))
+    {
+        remove(path);
+        return 0;
+    }
+    int retr;
+    if(S_ISDIR(statres.st_mode))
+    {
+        retr = remove(path);
+    }
+    if(errno ==ENOTEMPTY)
+    {    
+    char newpath[256];
+    int i;
+    int err1;
+    glob_t globres;
+    
+    strcpy(newpath,path);
+    strcat(newpath,"/*");
+    int ret;
+
+    glob(newpath,0,NULL,&globres);
+    strcpy(newpath,path);
+    strcat(newpath,"/.*");
+    glob(newpath,GLOB_APPEND,NULL,&globres);
+    for(i=0;i<globres.gl_pathc;i++)
+    {
+        if(!noloop(globres.gl_pathv[i]))
+        {           
+            err1 = remove(globres.gl_pathv[i]);
+            if(err1)
+            {   
+                  
+                if(errno == ENOTEMPTY)
+                {
+                    
+                    ret = reMovempty(globres.gl_pathv[i]);
+                    if(ret)
+                    {
+                        return errno;
+                    }
+                    else
+                    {
+                        printf("%s is remove\n",globres.gl_pathv[i]);
+                    }
+                }
+                else
+                {
+                    fprintf(stderr,"[%s] %s\n",globres.gl_pathv[i],strerror(errno));
+                    return errno;
+                }
+            }
+            else
+            {
+                printf("%s is  remove\n",globres.gl_pathv[i]);
+            }
+        }
+        remove(path);
+        
+        
+    }
+
+    }
+    return 0;
+}
 
 int reMove(char *path)
 {
     char *dirname = path;
-    int err;
+    int err,ret;
     err = remove(path);
     if(err)
     {
         if(errno == ENOTEMPTY)
-        
+        {
+            
+            ret = reMovempty(path);
+            if(ret)
+            {
+                return errno;
+            }
+            else
+            {
+                printf("%s is removed\n",path);
 
-        return errno;
+            }
+        }
+        else
+            return errno;
     }
     return 0;
     
