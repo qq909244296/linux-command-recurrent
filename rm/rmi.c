@@ -1,3 +1,22 @@
+/**
+ * @copyright Copyright (c) 2022 Jiawshi
+ * @author    Jiawshi (jiawshi@126.com)
+ * 
+ * @file      rmi.c
+ * @brief     
+ * 
+ * @version   V0.01
+ * @date      2022-12-04
+ * 
+ * @note      历史记录 ：
+ *            - [2022-12-04] [Jiawshi] 创建初始版本：
+ * @warning         在这个程序中有一些exit(0),或者exit(1),这个是可以被return一个非零值优化的，   
+ * @par       修改记录： 
+ * <table>
+ * <tr><th>date          <th>Version    <th>Author      <th>Description    </tr>
+ * <tr><td>2022-12-04    <td>V0.01      <td>Jiawshi       <td>创建初始版本    </tr>
+ * </table>
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +27,7 @@
 #include "rmi.h"
 #include <glob.h>
 
-struct flag_all *flags;
+struct flag_all *flags;//全局变量，来自于opt.h
 
 
 void printf_usage(void)
@@ -43,7 +62,14 @@ void printf_err(int err)
 {
     fprintf(stderr,"%s\n",strerror(err));
 }
-
+/**
+ * @fn        findempty
+ * @brief     验证当前目录是否为空目录
+ * 
+ * @param     [in] path      目录
+ * 
+ * @return    int            0为空目录，1为非空目录
+ */
 int findempty(char *path)
 {
     int i;
@@ -66,10 +92,19 @@ int findempty(char *path)
         return 0;
     }
 }
-
+/**
+ * @fn        statDir
+ * @brief     得到文件的相关属性
+ * 
+ * @param     [in] agv       文件名
+ * @param     [in] stat_buf  struct stat * 存放的地址  
+ * @param     [in] fflag     那个标记选项，这里这个参数可以被优化掉，因为前面有个全局结构体变量
+ * 
+ * @return    int            
+ */
 int statDir(char *agv,struct stat *stat_buf,int fflag)
 {
-    int reval;
+    //调用stat 或者lstat 似乎lstat更好，在处理符号链接的时候
     if(stat(agv, stat_buf) < 0)
     {
         if(fflag == 0)
@@ -78,7 +113,14 @@ int statDir(char *agv,struct stat *stat_buf,int fflag)
     }
     return 0;
 }
-
+/**
+ * @fn        noloop
+ * @brief     判断是否是 . 或  .. 
+ * 
+ * @param     [in] path      
+ * 
+ * @return    int       是返回1 不是返回0
+ */
 int noloop(const char *path)
 {
     
@@ -96,6 +138,15 @@ int noloop(const char *path)
     }
     return 0;
 }
+/**
+ * @fn        re_move
+ * @brief     一个递归删除的函数，本来在reMovempty中后来太长，后来拆分
+ * 
+ * @param     [in] arc       
+ * @param     [in] arv       
+ * 
+ * @return    int        成功返回0 失败为返回errno或者直接退出（这里需要优化）
+ */
 int re_move(const int arc,const char **arv)
 {
     int i,err1,ret,mind_ret;
@@ -106,7 +157,7 @@ int re_move(const int arc,const char **arv)
            
             mind_ret = mind_r(flags->iflag,arv[i]);   
             if(mind_ret)
-                exit(0);
+                exit(1);        //可以被优化
             err1 = remove(arv[i]);
 
             if(err1)
@@ -138,8 +189,15 @@ int re_move(const int arc,const char **arv)
         
         
     }
-
+    return 0;
 }
+/**
+ * @fn        glob_
+ * @brief     本来也是在reMovempty中调用，后来拆分，主要是获得该路径下的目录，并调用re_move删除
+ * 
+ * @param     [in] path      
+ * 
+ */
 void glob_(char *path)
 {
     char newpath[256];
@@ -152,8 +210,16 @@ void glob_(char *path)
     glob(newpath,GLOB_APPEND,NULL,&globres);
     
     re_move(globres.gl_pathc,globres.gl_pathv);
-    
+    globfree(&globres);
 }
+/**
+ * @fn        reMovempty（glob_ 和 re_move 从这个函数中拆分出来的）
+ * @brief     用来处理非空目录的删除函数
+ * 
+ * @param     [in] path      
+ * 
+ * @return    int            0为成功  否则退出，这里需要优化，可以返回非零在main中处理这个异常
+ */
 int reMovempty(char *path)
 {
     struct stat statres;
@@ -162,7 +228,7 @@ int reMovempty(char *path)
     if(lstat(path,&statres) < 0)
     {
         
-        exit(1);
+        exit(1);    //可以被优化
     }
     if(!S_ISDIR(statres.st_mode))
     {
@@ -174,15 +240,7 @@ int reMovempty(char *path)
         return 0;
     }
     
-    // if(S_ISDIR(statres.st_mode))
-    // {
-    //     printf("iii\n");
-    //     mind_r(flags->iflag,path);
-    //     retr = remove(path);
-    //     if(retr)
-    // }
-    // if(errno ==ENOTEMPTY)
-    // {   
+  
     glob_(path);
  
     mind_ret = mind_r(flags->iflag,path);
@@ -192,7 +250,14 @@ int reMovempty(char *path)
     //}
     return 0;
 }
-
+/**
+ * @fn        reMove
+ * @brief     删除函数，有main 函数调用
+ * 
+ * @param     [in] path      需要删除的文件或目录
+ * 
+ * @return    int            成功返回0 失败返回errno
+ */
 int reMove(char *path)
 {
     char *dirname = path;
@@ -225,12 +290,20 @@ int reMove(char *path)
     
     
 }
-
-int mind_r(int flag_r,char *arg)
+/**
+ * @fn        mind_f
+ * @brief     处理-i 选项用到的函数
+ * 
+ * @param     [in] flag_r    
+ * @param     [in] arg       
+ * 
+ * @return    int            
+ */
+int mind_r(int flag_i,char *arg)
 {   
     char std_c=0;
     int ret;
-    if(flag_r)
+    if(flag_i)
     {
         ret = findempty(arg);
         if(ret == 0)
@@ -254,20 +327,15 @@ int mind_r(int flag_r,char *arg)
         if(std_c == 'y' || std_c == 'Y')
         {
             
-             return 0;
-                //do something
+             return 0;      //do it
         }
         else if((char)std_c == 'N'|| (char)std_c == 'n')
             {
-                return 1;
-                    //not do something
+                return 1;   //not do it
             }
             else
             {
-                //yprintf("   %c\n",std_c);
-            
-                return 2;
-                    //not do something
+                return 2;   //无效的输入   not do anything
             }
         
     }
@@ -276,6 +344,14 @@ int mind_r(int flag_r,char *arg)
         return 0;
     }
 }
+/**
+ * @fn        mind_i
+ * @brief     处理-I选项的函数
+ * 
+ * @param     [in] i_flag    
+ * 
+ * @return    int            
+ */
 int mind_i(int i_flag)
 {
     char std_c;
@@ -291,20 +367,15 @@ int mind_i(int i_flag)
         if(std_c == 'y' || std_c == 'Y')
         {
             
-             return 0;
-                //do something
+             return 0;  //do it
         }
         else if((char)std_c == 'N'|| (char)std_c == 'n')
             {
-                return 1;
-                    //not do something
+                return 1;       //not do it
             }
             else
             {
-                //yprintf("   %c\n",std_c);
-            
-                return 2;
-                    //not do something
+                return 2;       //无效的输入 not do anything
             }
         
     }

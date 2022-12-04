@@ -39,6 +39,7 @@ int main(int argc, char **argv)
 
         if(statDir(argv[i],&statbuf,flags->fflag))
         {
+            free(flags);
             exit(1);
         }
         if(S_ISDIR(statbuf.st_mode))
@@ -68,6 +69,7 @@ int main(int argc, char **argv)
                 mind_ret = mind_i(flags->i_flag);
                 if(mind_ret)
                 {
+                    free(flags);
                     exit(0);
                 }
                 err = reMove(argv[i]);
@@ -107,5 +109,6 @@ int main(int argc, char **argv)
         
 
     }
+    free(flags);
     exit(0);
 }
