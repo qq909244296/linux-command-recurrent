@@ -1,3 +1,22 @@
+/**
+ * @copyright Copyright (c) 2022 Jiawshi
+ * @author    Jiawshi (jiawshi@126.com)
+ * 
+ * @file      rmc.c
+ * @brief     整个程序还存在大量优化的可能，但是我不想改了，该复习期末考试了
+ * 
+ * @version   V0.01
+ * @date      2022-12-04
+ * 
+ * @note      历史记录 ：
+ *            - [2022-12-04] [Jiawshi] 创建初始版本：
+ * @warning   
+ * @par       修改记录： 
+ * <table>
+ * <tr><th>date          <th>Version    <th>Author      <th>Description    </tr>
+ * <tr><td>2022-12-04    <td>V0.01      <td>Jiawshi       <td>创建初始版本    </tr>
+ * </table>
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -7,7 +26,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <glob.h>
-
+/**
+ * @fn        主函数
+ * @brief     这个程序里面没写注释
+ * 
+ * @param     [in] argc      
+ * @param     [in] argv      
+ * 
+ * @return    int            
+ */
 
 int main(int argc, char **argv)
 {
